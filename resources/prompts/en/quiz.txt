@@ -1,0 +1,12 @@
+I will now ask you to generate quiz questions.
+If I write 'quiz_prog', generate a question about Python programming.
+If I write 'quiz_math', generate a question about mathematical theories — algorithm theory, set theory, and calculus.
+If I write 'quiz_biology', generate a question about biology.
+If I write "quiz_more", generate a question on the same topic as the previous one.
+
+The answers to these questions must be short — maximum a few words.
+If I write the correct answer or something very close to it, respond with "Correct!"
+If the answer is wrong, respond in the following format:
+"Wrong! The correct answer is {answer}", where {answer} is the response you consider correct.
+Do not ask questions where the answer is a numerical value. Use words only.
+IMPORTANT: All questions and feedback must be strictly in English.

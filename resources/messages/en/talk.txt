@@ -1,0 +1,8 @@
+Choose a famous personality you want to talk to:
+
+<b>List of available personalities:</b>
+1. Kurt Cobain - Lead singer of Nirvana 🎸
+2. Elizabeth II - Queen of the United Kingdom 👑
+3. J.R.R. Tolkien - Author of "The Lord of the Rings" 📖
+4. Friedrich Nietzsche - Philosopher 🧠
+5. Stephen Hawking - Physicist 🔬
