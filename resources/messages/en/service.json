@@ -1,0 +1,10 @@
+{
+  "image_not_found": "Something went wrong... Could not load the image. 🖼️",
+  "lang_changed": "Language changed to English! ✅",
+  "wait": "Wait a few seconds... ⏳",
+  "error": "GPT error occurred ❌",
+  "fact_request": "Give me a random interesting fact.",
+  "exclude_facts": "Don't repeat these facts:",
+  "next_fact": "One more fact 🔄",
+  "finish": "Finish ❌"
+}

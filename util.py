@@ -1,30 +1,28 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, \
+from typing import Optional, List
+import json
+import logging
+from pathlib import Path
+from telegram import (
+    InlineKeyboardButton, InlineKeyboardMarkup, Message,
     BotCommand, MenuButtonCommands, BotCommandScopeChat, MenuButtonDefault
+)
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
-import logging
-import os
 
 from baseai import BaseAIService
 
-MESSAGES = {
-    "uk": {"wait": "Зачекайте декілька секунд... ⏳", "error": "Сталася помилка GPT ❌"},
-    "en": {"wait": "Wait a few seconds... ⏳", "error": "GPT error occurred ❌"}
+BASE_PATH = Path("resources")
+RESOURCE_PATHS = {
+    "messages": BASE_PATH / "messages",
+    "prompts": BASE_PATH / "prompts",
+    "images" : BASE_PATH / "images",
 }
-
-# конвертує об'єкт user в рядок
-def dialog_user_info_to_str(user_data) -> str:
-    mapper = {'language_from': 'Мова оригіналу', 'language_to': 'Мова перекладу', 'text_to_translate': 'Текст для перекладу'}
-    return '\n'.join(map(lambda k, v: (mapper[k], v), user_data.items()))
-
 
 # надсилає в чат текстове повідомлення
 async def send_text(update: Update, context: ContextTypes.DEFAULT_TYPE,
                     text: str, parse_mode: str = ParseMode.HTML) -> Message:
-
     clean_text = text.encode('utf16', errors='surrogatepass').decode('utf16')
-
     chat_id = update.effective_chat.id
 
     try:
@@ -34,29 +32,28 @@ async def send_text(update: Update, context: ContextTypes.DEFAULT_TYPE,
             parse_mode = parse_mode
         )
     except Exception as e:
-        logging.error(f"Помилка ParseMode {parse_mode}: {e}")
+        logging.error(f"Error in ParseMode {parse_mode}: {e}")
         return await context.bot.send_message(
             chat_id = chat_id,
             text = clean_text
         )
 
-# надсилає в чат текстове повідомлення, та додає до нього кнопки
-async def send_text_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, buttons: dict) -> Message:
-    text = text.encode('utf16', errors='surrogatepass').decode('utf16')
-    keyboard = []
-    for key, value in buttons.items():
-        button = InlineKeyboardButton(str(value), callback_data=str(key))
-        keyboard.append([button])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    return await context.bot.send_message(
-        update.effective_message.chat_id,
-        text=text, reply_markup=reply_markup,
-        message_thread_id=update.effective_message.message_thread_id)
-
-
 # надсилає в чат фото
 async def send_image(update: Update, context: ContextTypes.DEFAULT_TYPE, name: str) -> Message:
-    with open(f'resources/images/{name}.jpg', 'rb') as image:
+    lang = context.user_data.get("lang", "uk")
+    service_data = load_json("service", lang)
+    error_message = service_data.get("image_not_found", "Image not found...")
+
+    image_path = RESOURCE_PATHS["images"] / f"{name}.jpg"
+
+    if not image_path.exists():
+        logging.error(f"Image not found: {image_path}")
+        return await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=error_message
+        )
+
+    with open(image_path, 'rb') as image:
         return await context.bot.send_photo(chat_id=update.effective_chat.id, photo=image)
 
 
@@ -74,49 +71,49 @@ async def hide_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.set_chat_menu_button(menu_button=MenuButtonDefault(),
                                            chat_id=update.effective_chat.id)
 
-def _load_resource(folder: str, name: str, lang: str = "uk") -> str:
-    path = os.path.join("resources", folder, lang, f"{name}.txt")
-
-    if not os.path.exists(path):
-        path = os.path.join("resources", folder, "uk", f"{name}.txt")
-
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Ресурс '{name}' не знайдено ні в '{lang}', ні в 'uk'.")
-
-    with open(path, "r", encoding="utf8") as file:
-        return file.read()
-
+def _load_resource(folder_key: str, name: str, lang: str = "uk") -> str:
+    path = RESOURCE_PATHS[folder_key] / lang / f"{name}.txt"
+    if not path.exists():
+        logging.error(f"Resource '{name}' not found at: {path}")
+        return ""
+    return path.read_text(encoding="utf8")
 
 def load_message(name: str, lang: str = "uk"):
     return _load_resource("messages", name, lang)
 
-
 def load_prompt(name: str, lang: str = "uk"):
     return _load_resource("prompts", name, lang)
 
+def load_json(filename: str, lang: str) -> dict:
+    path = RESOURCE_PATHS["messages"] / lang / f"{filename}.json"
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logging.error(f"Error loading JSON {path}: {e}")
+        return {}
 
 async def get_ai_reply(
     update: Update,
     ai_service: BaseAIService,
     messages: list,
     lang: str = "uk",
-    button_text: str = None,
-    button_data: str = None
+    reply_markup: Optional[InlineKeyboardMarkup] = None
 ):
-    actual_message = update.message if update.message else update.callback_query.message
-    wait_msg = await actual_message.reply_text(MESSAGES[lang]["wait"])
+    actual_message = update.effective_message
+
+    service_data = load_json("service", lang)
+    wait_text = service_data.get("wait", "Please wait...")
+    error_text = service_data.get("error", "Error occurred.")
+    wait_msg = await actual_message.reply_text(wait_text)
+
     try:
         response_text = await ai_service.send_messages(messages)
-
-        reply_markup = None
-        if button_text and button_data:
-            keyboard = [[InlineKeyboardButton(button_text, callback_data=button_data)]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
 
         await wait_msg.edit_text(response_text, reply_markup=reply_markup)
         return response_text
 
     except Exception as e:
         logging.error(f"AI Service Error: {e}")
-        await wait_msg.edit_text(MESSAGES.get(lang, MESSAGES["uk"])["error"])
+        await wait_msg.edit_text(error_text)
         return None
