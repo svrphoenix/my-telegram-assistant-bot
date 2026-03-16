@@ -6,5 +6,6 @@
   "fact_request": "Give me a random interesting fact.",
   "exclude_facts": "Don't repeat these facts:",
   "next_fact": "One more fact 🔄",
-  "finish": "Finish ❌"
+  "finish": "Finish ❌",
+  "gpt_is_active": "⚠️ GPT mode is active. To change the mode, please click the 'Finish' button first."
 }

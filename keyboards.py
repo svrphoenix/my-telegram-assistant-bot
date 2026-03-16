@@ -1,4 +1,4 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 
 def build_language_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
@@ -14,3 +14,11 @@ def build_random_keyboard(service_msg: dict) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(service_msg.get("finish", "❌"), callback_data="start_menu")]
     ])
 
+def build_exit_keyboard(service_msg: dict):
+    button_text = service_msg.get("finish", "Завершити ❌")
+
+    return ReplyKeyboardMarkup(
+        [[KeyboardButton(button_text)]],
+        resize_keyboard=True,
+        one_time_keyboard=False
+    )
