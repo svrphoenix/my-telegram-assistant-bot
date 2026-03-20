@@ -22,3 +22,7 @@ def build_exit_keyboard(service_msg: dict):
         resize_keyboard=True,
         one_time_keyboard=False
     )
+
+def build_talk_keyboard(characters: list[str]) -> ReplyKeyboardMarkup:
+    buttons = [[char] for char in characters]
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)

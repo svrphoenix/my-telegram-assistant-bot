@@ -1,15 +1,17 @@
 from telegram import Update
-from telegram.ext import (ConversationHandler, CommandHandler, MessageHandler, filters,
-    CallbackQueryHandler, ContextTypes)
+from telegram.ext import (
+    MessageHandler, filters,
+    ContextTypes
+)
 
 from baseai import BaseAIService
-from conversations.common import start_menu_button_handler, start, MENU
+from constants import States
+from conversations.common import start_menu_button_handler, mode_status_check
 from util import load_message, load_json, load_prompt, get_ai_reply, send_image, send_text, hide_main_menu
 from keyboards import build_exit_keyboard
 
-GPT_MODE = 1
 
-async def gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def gpt_mode_run(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await hide_main_menu(update, context)
     lang = context.user_data.get("lang", "uk")
     service_msg = load_json('service', lang)
@@ -22,10 +24,10 @@ async def gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         load_message('gpt', lang),
         reply_markup=build_exit_keyboard(service_msg)
     )
-    return GPT_MODE
+    return States.GPT_MODE
 
 
-async def gpt_dialog(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def gpt_mode_dialog(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     lang = context.user_data.get("lang", "uk")
     service_msg = load_json('service', lang)
     exit_text = service_msg.get("finish", "Завершити ❌").strip()
@@ -57,36 +59,12 @@ async def gpt_dialog(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if response_text:
         context.user_data["gpt_history"].append({"role": "assistant", "content": response_text})
 
-    return GPT_MODE
+    return States.GPT_MODE
 
-async def gpt_status_check(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    lang = context.user_data.get("lang", "uk")
-    service_msg = load_json('service', lang)
-
-    warning_text = service_msg.get("gpt_is_active", "⚠️ Режим GPT активний. Щоб змінити режим, натисніть кнопку 'Закінчити'.")
-
-    await update.message.reply_text(warning_text, reply_markup=build_exit_keyboard(service_msg))
-    return GPT_MODE
-
-
-def get_gpt_handler():
-    return ConversationHandler(
-        entry_points=[CommandHandler("gpt", gpt)],
-        states={
-            GPT_MODE: [
-                CommandHandler("random", gpt_status_check),
-                MessageHandler(filters.COMMAND, gpt_status_check),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, gpt_dialog),
-            ],
-        },
-        fallbacks=[
-            CallbackQueryHandler(start_menu_button_handler, pattern="^start_menu$"),
-            CommandHandler("start", start),
-        ],
-        map_to_parent={
-            MENU: MENU
-        },
-        persistent = True,
-        name = "gpt_conversation",
-        per_message = False
-    )
+def get_gpt_states():
+    return {
+        States.GPT_MODE: [
+            MessageHandler(filters.COMMAND, lambda upd, cont: mode_status_check(upd, cont, States.GPT_MODE)),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, gpt_mode_dialog),
+        ]
+    }

@@ -3,9 +3,8 @@
   "lang_changed": "Language changed to English! ✅",
   "wait": "Wait a few seconds... ⏳",
   "error": "GPT error occurred ❌",
-  "fact_request": "Give me a random interesting fact.",
-  "exclude_facts": "Don't repeat these facts:",
   "next_fact": "One more fact 🔄",
   "finish": "Finish ❌",
-  "gpt_is_active": "⚠️ GPT mode is active. To change the mode, please click the 'Finish' button first."
+  "mode_is_active": "⚠️ '{mode}' mode is currently active. Press 'Finish' to exit.",
+  "character_chosen": "✅ {character} online! Waiting for your message."
 }

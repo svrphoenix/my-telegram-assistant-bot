@@ -6,7 +6,7 @@ from telegram import (
     BotCommandScopeChat, MenuButtonDefault, ReplyKeyboardMarkup, InlineKeyboardMarkup, ReplyKeyboardRemove
 )
 from telegram import Update
-from telegram.constants import ParseMode
+from telegram.constants import ParseMode, ChatAction
 from telegram.ext import ContextTypes
 
 from baseai import BaseAIService
@@ -79,19 +79,26 @@ async def get_ai_reply(
     context: ContextTypes.DEFAULT_TYPE,
     ai_service: BaseAIService,
     messages: list,
-    reply_markup: ReplyKeyboardMarkup | InlineKeyboardMarkup | ReplyKeyboardRemove | None = None
-
+    reply_markup: ReplyKeyboardMarkup | InlineKeyboardMarkup | ReplyKeyboardRemove | None = None,
+    show_wait: bool = True
 ):
     lang = context.user_data.get("lang", "uk")
     actual_message = update.effective_message
     service_data = load_json("service", lang)
-    wait_text = service_data.get("wait", "Please wait...")
     error_text = service_data.get("error", "Error occurred.")
-    wait_msg = await actual_message.reply_text(wait_text)
+
+    wait_msg = None
+
+    if show_wait:
+        wait_text = service_data.get("wait", "...")
+        wait_msg = await actual_message.reply_text(wait_text)
+
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
     try:
         response_text = await ai_service.send_messages(messages)
-        await wait_msg.delete()
+        if wait_msg:
+            await wait_msg.delete()
         await send_text(
             update=update,
             context=context,
@@ -102,7 +109,8 @@ async def get_ai_reply(
 
     except Exception as e:
         logging.error(f"AI Service Error: {e}")
-        await wait_msg.delete()
+        if wait_msg:
+            await wait_msg.delete()
         await actual_message.reply_text(error_text)
         return None
 

@@ -2,14 +2,16 @@ import logging
 
 from telegram.ext import (
     ApplicationBuilder, CommandHandler,
-    CallbackQueryHandler, PicklePersistence, ConversationHandler, PersistenceInput,
+    CallbackQueryHandler, PicklePersistence, ConversationHandler, PersistenceInput
 )
 
 from config import config
-from conversations.common import start, MENU, language_button_handler, RANDOM_MODE, start_menu_button_handler
-from conversations.gpt_conv import get_gpt_handler
-from conversations.random_conv import get_random_handlers, random
+from constants import States
 from gpt import ChatGptService
+from conversations.common import start, language_button_handler, start_menu_button_handler
+from conversations.gpt_conv import gpt_mode_run, get_gpt_states
+from conversations.random_conv import random_mode_run, get_random_states
+from conversations.talk_conv import talk_mode_run, get_talk_states
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -46,21 +48,22 @@ if __name__ == "__main__":
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
-            MENU: [
-                get_gpt_handler(),
+            States.MENU_MODE: [
+                CommandHandler("gpt", gpt_mode_run),
+                CommandHandler("talk", talk_mode_run),
+                CommandHandler("random", random_mode_run),
                 CallbackQueryHandler(language_button_handler, pattern="^lang_"),
-                CommandHandler("random", random),
             ],
-            RANDOM_MODE: get_random_handlers(),
+            **get_gpt_states(),
+            **get_talk_states(),
+            **get_random_states()
         },
-
         fallbacks=[
             CallbackQueryHandler(start_menu_button_handler, pattern="^start_menu$"),
             CommandHandler("start", start),
         ],
         persistent=True,
         name="main_conversation",
-        per_message=False
     )
 
     app.add_handler(conv_handler)
