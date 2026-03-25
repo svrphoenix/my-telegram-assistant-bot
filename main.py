@@ -1,19 +1,12 @@
 import logging
 
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler,
-    CallbackQueryHandler, PicklePersistence, ConversationHandler, PersistenceInput
+    ApplicationBuilder, PicklePersistence, PersistenceInput
 )
 
 from config import config
-from constants import States
-from conversations.quiz_conv import quiz_run, get_quiz_states
-from conversations.vocabulary_conv import vocab_run, get_vocab_states
+from conversations.router import get_main_conversation
 from gpt import ChatGptService
-from conversations.common import start, language_button_handler, start_menu_button_handler
-from conversations.gpt_conv import gpt_mode_run, get_gpt_states
-from conversations.random_conv import random_mode_run, get_random_states
-from conversations.talk_conv import talk_mode_run, get_talk_states
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -47,32 +40,7 @@ if __name__ == "__main__":
         .build()
     )
 
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            States.MENU_MODE: [
-                CommandHandler("gpt", gpt_mode_run),
-                CommandHandler("talk", talk_mode_run),
-                CommandHandler("random", random_mode_run),
-                CommandHandler('quiz', quiz_run),
-                CommandHandler("vocabulary", vocab_run),
-                CallbackQueryHandler(language_button_handler, pattern="^lang_"),
-            ],
-            **get_gpt_states(),
-            **get_talk_states(),
-            **get_random_states(),
-            **get_quiz_states(),
-            **get_vocab_states()
-        },
-        fallbacks=[
-            CallbackQueryHandler(start_menu_button_handler, pattern="^start_menu$"),
-            CommandHandler("start", start),
-        ],
-        persistent=True,
-        name="main_conversation",
-    )
-
-    app.add_handler(conv_handler)
+    app.add_handler(get_main_conversation())
 
     logger.info("Bot started...")
     app.run_polling()
