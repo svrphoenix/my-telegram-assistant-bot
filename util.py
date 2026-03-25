@@ -31,6 +31,7 @@ async def send_text(
     chat_id = update.effective_chat.id
 
     try:
+        await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
         return await context.bot.send_message(
             chat_id = chat_id,
             text = clean_text,
@@ -54,7 +55,7 @@ async def send_image(
 ) -> Message:
     lang = context.user_data.get("lang", "uk")
     service_data = load_json("service", lang)
-    error_message = service_data.get("image_not_found", "Image not found...")
+    error_message = service_data.get("common",{}).get("image_not_found", "Image not found...")
 
     image_path = RESOURCE_PATHS["images"] / f"{name}.jpg"
 
@@ -85,15 +86,13 @@ async def get_ai_reply(
     lang = context.user_data.get("lang", "uk")
     actual_message = update.effective_message
     service_data = load_json("service", lang)
-    error_text = service_data.get("error", "Error occurred.")
+    error_text = service_data.get("common",{}).get("error", "Error occurred.")
 
     wait_msg = None
 
     if show_wait:
-        wait_text = service_data.get("wait", "...")
+        wait_text = service_data.get("common",{}).get("wait", "...")
         wait_msg = await actual_message.reply_text(wait_text)
-
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
     try:
         response_text = await ai_service.send_messages(messages)
@@ -152,3 +151,7 @@ def load_json(filename: str, lang: str) -> dict:
     except Exception as e:
         logging.error(f"Error loading JSON {path}: {e}")
         return {}
+
+def get_service_msg(context: ContextTypes.DEFAULT_TYPE, name: str):
+    lang = context.user_data.get("lang", "uk")
+    return load_json('service', lang).get(name, {})

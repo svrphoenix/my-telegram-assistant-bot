@@ -7,6 +7,8 @@ from telegram.ext import (
 
 from config import config
 from constants import States
+from conversations.quiz_conv import quiz_run, get_quiz_states
+from conversations.vocabulary_conv import vocab_run, get_vocab_states
 from gpt import ChatGptService
 from conversations.common import start, language_button_handler, start_menu_button_handler
 from conversations.gpt_conv import gpt_mode_run, get_gpt_states
@@ -52,11 +54,15 @@ if __name__ == "__main__":
                 CommandHandler("gpt", gpt_mode_run),
                 CommandHandler("talk", talk_mode_run),
                 CommandHandler("random", random_mode_run),
+                CommandHandler('quiz', quiz_run),
+                CommandHandler("vocabulary", vocab_run),
                 CallbackQueryHandler(language_button_handler, pattern="^lang_"),
             ],
             **get_gpt_states(),
             **get_talk_states(),
-            **get_random_states()
+            **get_random_states(),
+            **get_quiz_states(),
+            **get_vocab_states()
         },
         fallbacks=[
             CallbackQueryHandler(start_menu_button_handler, pattern="^start_menu$"),

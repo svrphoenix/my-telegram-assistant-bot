@@ -10,6 +10,7 @@ from conversations.common import start_menu_button_handler, mode_status_check
 from util import load_message, load_json, load_prompt, get_ai_reply, send_image, send_text, hide_main_menu
 from keyboards import build_exit_keyboard
 
+MAX_HISTORY = 10
 
 async def gpt_mode_run(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await hide_main_menu(update, context)
@@ -30,7 +31,7 @@ async def gpt_mode_run(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 async def gpt_mode_dialog(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     lang = context.user_data.get("lang", "uk")
     service_msg = load_json('service', lang)
-    exit_text = service_msg.get("finish", "Завершити ❌").strip()
+    exit_text = service_msg.get("common",{}).get("finish", "Завершити ❌").strip()
     user_text = update.message.text.strip()
 
     if user_text == exit_text:
@@ -44,9 +45,9 @@ async def gpt_mode_dialog(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         ]
     context.user_data["gpt_history"].append({"role": "user", "content": update.message.text})
 
-    if len(context.user_data["gpt_history"]) > 11:  # prompt + 10 повідомлень
+    if len(context.user_data["gpt_history"]) > MAX_HISTORY + 1:  # prompt + MAX_HISTORY
         context.user_data["gpt_history"] = [context.user_data["gpt_history"][0]] + context.user_data["gpt_history"][
-            -20:]
+            -MAX_HISTORY:]
 
     chat_gpt: BaseAIService = context.bot_data.get("gpt_service")
     response_text = await get_ai_reply(

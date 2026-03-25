@@ -4,8 +4,10 @@ class States:
     GPT_MODE: int
     TALK_SELECT: int
     TALK_DIALOG: int
-    QUIZ_SELECT: int
+    QUIZ_SELECT_TOPIC: int
     QUIZ_QUESTION: int
+    VOCAB_LEARN: int
+    VOCAB_TRAINING: int
 
 MODES_MAP = {
     "MENU_MODE": "MENU",
@@ -13,8 +15,10 @@ MODES_MAP = {
     "GPT_MODE": "GPT",
     "TALK_SELECT": "TALK",
     "TALK_DIALOG": "TALK",
-    "QUIZ_SELECT": "QUIZ",
-    "QUIZ_QUESTION": "QUIZ"
+    "QUIZ_SELECT_TOPIC": "QUIZ",
+    "QUIZ_QUESTION": "QUIZ",
+    "VOCAB_LEARN": "VOCAB",
+    "VOCAB_TRAINING": "TRAINING"
 }
 
 MODES = {}

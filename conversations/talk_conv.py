@@ -44,11 +44,9 @@ async def talk_character_select(update: Update, context: ContextTypes.DEFAULT_TY
     lang = context.user_data.get("lang", "uk")
     service_msg = load_json('service', lang)
 
-    status_text = service_msg.get("character_chosen", "✅ {character} на зв'язку! Чекаю на повідомлення.")
-    await update.message.reply_text(
-        status_text.format(character=user_choice),
-        reply_markup=build_exit_keyboard(service_msg)
-    )
+    await send_image(update,context,f"talk_{char_key}")
+    status_text = service_msg.get("talk",{}).get("character_chosen", "✅ {character} на зв'язку! Чекаю на повідомлення.")
+    await send_text(update, context, status_text.format(character=user_choice), reply_markup=build_exit_keyboard(service_msg))
 
     return States.TALK_DIALOG
 
@@ -57,7 +55,7 @@ async def talk_mode_dialog(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     lang = context.user_data.get("lang", "uk")
     service_msg = load_json('service', lang)
 
-    exit_text = service_msg.get("finish", "Завершити ❌").strip()
+    exit_text = service_msg.get("common",{}).get("finish", "Завершити ❌").strip()
     if text == exit_text:
         context.user_data.pop("talk_history", None)
         context.user_data.pop("current_char", None)

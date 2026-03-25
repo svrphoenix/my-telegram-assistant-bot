@@ -6,6 +6,7 @@ from constants import States
 from keyboards import build_random_keyboard
 from util import hide_main_menu, load_json, send_image, load_prompt, get_ai_reply
 
+MAX_HISTORY = 10
 
 async def random_mode_run(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await hide_main_menu(update, context)
@@ -22,7 +23,7 @@ async def random_mode_run(update: Update, context: ContextTypes.DEFAULT_TYPE):
     messages = [{"role": "system", "content": prompt}]
 
     if context.user_data["fact_history"]:
-        history_str = "\n".join(context.user_data["fact_history"][-5:]) #last 5 facts
+        history_str = "\n".join(context.user_data["fact_history"][-MAX_HISTORY:]) #last facts
         messages.append({"role": "user", "content": f"Don't repeat these facts:\n{history_str}"})
     else:
         messages.append({"role": "user", "content": "Give me a random interesting fact."})
@@ -38,7 +39,7 @@ async def random_mode_run(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if response_text:
         context.user_data["fact_history"].append(response_text)
-        if len(context.user_data["fact_history"]) > 10: # delete if facts more than 10
+        if len(context.user_data["fact_history"]) > MAX_HISTORY: # delete if facts more than MAX_HISTORY
             context.user_data["fact_history"].pop(0)
 
     return States.RANDOM_MODE

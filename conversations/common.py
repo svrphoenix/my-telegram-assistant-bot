@@ -5,7 +5,7 @@ from constants import MODES, States
 from keyboards import build_language_keyboard, build_exit_keyboard
 from util import load_message, load_json, send_image, send_text, show_main_menu
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     reply_markup = build_language_keyboard()
     await update.message.reply_text(
         f'Hello, {update.effective_user.first_name}!\n\nОберіть мову / Choose language:',
@@ -31,7 +31,7 @@ async def language_button_handler(update: Update, context: ContextTypes.DEFAULT_
     context.user_data["lang"] = lang_code
     status_msgs = load_json('service', lang_code)
 
-    await query.edit_message_text(text=status_msgs.get("lang_changed", "Мову змінено! ✅"))
+    await query.edit_message_text(text=status_msgs.get("common",{}).get("lang_changed", "Мову змінено! ✅"))
     await show_main_screen(update, context)
 
     return States.MENU_MODE
@@ -49,7 +49,7 @@ async def mode_status_check(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
     mode_label = MODES.get(current_state, "UNKNOWN")
 
-    template = service_msg.get(
+    template = service_msg.get("common",{}).get(
         "mode_is_active",
         "⚠️ Режим «{mode}» наразі активний. Натисніть 'Закінчити' для виходу."
     )

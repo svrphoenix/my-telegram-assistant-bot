@@ -5,4 +5,5 @@ This bot combines the convenience of <i>Telegram</i> and the power of <b>ChatGPT
 2. /random — discover a random fact · 🧠
 3. /gpt — ask ChatGPT a question · 🤖
 4. /talk — chat with a famous personality · 👤
-5. /quiz — test your knowledge ❓
+5. /quiz — test your knowledge · ❓
+6. /vocabulary — foreign word trainer (En->Uk) · 📚

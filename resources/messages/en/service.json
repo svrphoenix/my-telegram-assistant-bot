@@ -1,10 +1,40 @@
 {
-  "image_not_found": "Something went wrong... Could not load the image. 🖼️",
-  "lang_changed": "Language changed to English! ✅",
-  "wait": "Wait a few seconds... ⏳",
-  "error": "GPT error occurred ❌",
-  "next_fact": "One more fact 🔄",
-  "finish": "Finish ❌",
-  "mode_is_active": "⚠️ '{mode}' mode is currently active. Press 'Finish' to exit.",
-  "character_chosen": "✅ {character} online! Waiting for your message."
+  "common": {
+    "image_not_found": "Something went wrong... Failed to load the image. 🖼️",
+    "lang_changed": "Language changed to English! ✅",
+    "wait": "Please wait a few seconds... ⏳",
+    "error": "GPT error occurred ❌",
+    "finish": "Finish ❌",
+    "mode_is_active": "⚠️ '{mode}' mode is currently active. Press 'Finish' to exit."
+  },
+  "random": {
+    "next_fact": "One more fact 🔄"
+  },
+  "talk": {
+    "character_chosen": "✅ {character} is online! Waiting for your message."
+  },
+  "vocab": {
+    "vocab_intro": "Welcome to the Word Trainer! 🎉\nHere you can learn new English words with translations and examples, and test your knowledge.",
+    "more": "New word 🆕",
+    "training": "Training 🧠",
+    "learned": "You haven't learned any words yet! 📚",
+    "training_start": "Training mode! How do you translate the word: <i>{word}</i>? 🤔",
+    "next_word": "Next word: <i>{next_word}</i>?",
+    "vocab_length": "Your vocabulary size: {length} words",
+    "correct": "✅ Correct!",
+    "wrong": "❌ Incorrect answer.",
+    "training_finished": "🏁 Quiz finished! Your result: <b>{score}/{total}</b>"
+  },
+  "quiz": {
+    "quiz_intro": "Test your erudition with ChatGPT! 🧠\nPick a topic to play:",
+    "prog": "Programming (Python)",
+    "math": "Math",
+    "biology": "Biology",
+    "next_question_btn": "Next question ➡️",
+    "change_topic_btn": "Change topic 🔄",
+    "correct": "Correct!",
+    "incorrect_answer": "Wrong! The correct answer is <b>{}</b>",
+    "score_status": "<b>📊 Current score: {score}/{total}</b>",
+    "next_prompt": "Continue?"
+  }
 }
