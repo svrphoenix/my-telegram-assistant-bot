@@ -7,6 +7,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: EC2
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,11 +20,11 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/bot_assist
+            cd ~/bot_assist/my-telegram-assistant-bot
             git pull origin main || echo "Directory is created yet"
-            docker rm -f my-bot-container || true
-            docker build -t my-tg-bot .
-            docker run -d \
+            sudo docker rm -f my-bot-container || true
+            sudo docker build -t my-tg-bot .
+            sudo docker run -d \
               --restart always \
               --name my-bot-container \
               -e BOT_TOKEN="${{ secrets.BOT_TOKEN }}" \
