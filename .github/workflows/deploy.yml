@@ -1,0 +1,30 @@
+name: Deploy Bot
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/bot_assist
+            git pull origin main || echo "Directory is created yet"
+            docker rm -f my-bot-container || true
+            docker build -t my-tg-bot .
+            docker run -d \
+              --restart always \
+              --name my-bot-container \
+              -e BOT_TOKEN="${{ secrets.BOT_TOKEN }}" \
+              -e GPT_TOKEN="${{ secrets.GPT_TOKEN }}" \
+              my-tg-bot
